@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: access-wsock-svc
+  annotations:
+    # [핵심] 이 3줄이 추가되면 AWS에서 자동으로 NLB를 만들어줍니다.
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+    # 내부망 전용이면 "internal로 변경해서 설정", 인터넷 연결이면 "internet-facing" (기본값, 따로 설정 필요 X)
+    # service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local # 클라이언트의 진짜 IP를 보존하기 위해 필요
+  selector:
+    app: xt-wsock
+  ports:
+  - name: wsock-main
+    port: 40046
+    targetPort: 30046
+  - name: xtcl
+    port: 8400
+    targetPort: 8400

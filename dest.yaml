@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dest-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dest
+  template:
+    metadata:
+      labels:
+        app: dest
+    spec:
+      serviceAccountName: registry
+      containers:
+      - name: dest-app
+        image: 211.240.28.240:30081/platform-development-team/dest:8d1a2f6f
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7110
+          name: demo-ap
+        env:
+        - name: TZ
+          value: "Asia/Seoul"
+
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: role
+                operator: In
+                values: ["dest-layer"]
+      tolerations:
+      - key: "group"
+        operator: "Equal"
+        value: "biz"
+        effect: "NoSchedule"

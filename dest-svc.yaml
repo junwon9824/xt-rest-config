@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dest-svc # 접속 서버가 호출할 이름
+spec:
+  type: ClusterIP # 내부 전용 (기본값이라 생략 가능하지만 명시함)
+  selector:
+    app: dest     # dest.yaml에서 설정한 label과 같아야 함
+  ports:
+  - protocol: TCP
+    port: 7110      # 접속서버가 요청할 포트
+    targetPort: 7110 # 실제 파드의 포트
