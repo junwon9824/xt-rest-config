@@ -26,6 +26,17 @@ spec:
           value: "my-kafka:9092"
         - name: SCHEMA_REGISTRY
           value: "http://sr-service:8081"
+        volumeMounts:
+        - name: test-file-data
+          mountPath: /home/xt_rest/data/test  # 앱이 파일을 찾는 내부 경로로 수정
+          readOnly: true
+
+      volumes:
+      - name: test-file-data
+        hostPath:
+          path: /home/xt_rest/k8s-project/fep/data/test
+          type: File  # 디렉토리가 아닌 단일 파일임을 명시
+
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
