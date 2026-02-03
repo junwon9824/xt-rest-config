@@ -51,7 +51,7 @@ spec:
 
       # (2) XtREST
       - name: xt-rest-app
-        image: 211.240.28.240:30081/platform-development-team/access-rest:998c599
+        image: 211.240.28.240:30081/platform-development-team/access-rest:ff0d9a7
         imagePullPolicy: Always
         resources:
           requests:
