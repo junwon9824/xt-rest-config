@@ -61,7 +61,7 @@ spec:
 
       # (2) XtWSOCK
       - name: xt-wsock-app
-        image: 211.240.28.240:30081/platform-development-team/access-wsock:ff0d9a7
+        image: 211.240.28.240:30081/platform-development-team/access-wsock:c9c4161
         imagePullPolicy: Always
         env:
         - name: TZ
