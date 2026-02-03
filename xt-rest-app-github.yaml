@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/junwon9824/xt_rest.git
+    repoURL: https://github.com/junwon9824/xt-rest-config.git
     targetRevision: HEAD
     path: .
   destination:
