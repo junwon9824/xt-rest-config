@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: xt-rest-app-github
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/junwon9824/xt_rest.git
+    targetRevision: HEAD
+    path: github-deploy      # GitHub 저장소 내의 배포용 YAML 폴더
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-dev-github # 새로운 GitHub 전용 방
+  syncPolicy:
+    automated:               # 자동 동기화 설정
+      selfHeal: true         # 수동으로 수정해도 자동으로 원복
+      prune: true            # Git에서 삭제하면 쿠버네티스에서도 삭제

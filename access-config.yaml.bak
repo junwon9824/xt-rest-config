@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: access-config
+data:
+  # ============================================================
+  # [1] REST + Page 설정 (nginx-rest.conf)
+  # ============================================================
+  nginx-rest.conf: |
+    worker_processes auto;
+
+    # [수정] 표준 경로 사용
+    pid /tmp/nginx.pid;
+
+    events { worker_connections 1024; }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        sendfile on;
+
+        # 임시 경로 권한 문제 방지
+        client_body_temp_path /tmp/client_temp;
+        proxy_temp_path       /tmp/proxy_temp_path;
+        fastcgi_temp_path     /tmp/fastcgi_temp;
+        uwsgi_temp_path       /tmp/uwsgi_temp;
+        scgi_temp_path        /tmp/scgi_temp;
+
+        # Upstream 정의
+        upstream fcgi_backend {
+            least_conn;
+            server unix:/var/run/xt/rest_1.sock;
+            server unix:/var/run/xt/rest_2.sock;
+            server unix:/var/run/xt/rest_3.sock;
+            server unix:/var/run/xt/rest_4.sock;
+            server unix:/var/run/xt/rest_5.sock;
+            server unix:/var/run/xt/rest_6.sock;
+        }
+
+        # [A] 페이지 전용 (30145)
+        server {
+            listen 30145;
+            server_name page-server;
+            root /home/xt_rest/wproj/src/pages;
+            index XtHomePage.html;
+            location = / { try_files $uri $uri/ /XtHomePage.html; }
+            location = /api/ping { return 200 'pong'; add_header Content-Type text/plain; }
+
+            location = /platform/rest-tr-fcgi { rewrite ^ /platform/rest_tr_fcgi.html; }
+            location = /platform/wsock-real   { rewrite ^ /platform/wsock_real.html; }
+            location = /mon_ch                { rewrite ^ /monitor/monitor_main.html; }
+            location = /mon_cron              { rewrite ^ /monitor/XtCRON_Monitor.html; }
+            location = /kr_fcgi               { rewrite ^ /krtest/kr_fcgi.html; }
+            location = /kr_wsock              { rewrite ^ /krtest/kr_wsock.html; }
+            location = /trad_restful          { rewrite ^ /trading/trad_restful.html; }
+            location = /trad_websocket        { rewrite ^ /trading/trad_websocket.html; }
+            location = /trad_index            { rewrite ^ /trading/trad_index.html; }
+
+            location = /svrauto_buy           { rewrite ^ /trading/svrauto_buy.html; }
+            location = /svrauto_sell          { rewrite ^ /trading/svrauto_sell.html; }
+            location = /svrauto_sell_ts       { rewrite ^ /trading/svrauto_sell_ts.html; }
+            location = /svrauto_cond_list     { rewrite ^ /trading/svrauto_cond_list.html; }
+
+            location /trad_admin { rewrite ^ /trading/trad_admin.html; }
+            location /public/ { alias /home/xt_rest/wproj/src/pages/trading/public/; }
+
+        }
+
+        # [B] REST API 전용 (30045)
+        server {
+            listen 30045;
+            server_name rest-api-server;
+
+            location /XtFCGI {
+                # [수정] 표준 로그 경로 사용 (/var/log/nginx/...)
+                access_log /var/log/nginx/access_xtfcgi.log;
+
+                # 헤더 정리
+                fastcgi_hide_header Access-Control-Allow-Origin;
+                fastcgi_hide_header Access-Control-Allow-Methods;
+                fastcgi_hide_header Access-Control-Allow-Headers;
+                fastcgi_hide_header Access-Control-Allow-Credentials;
+
+                # [수정] 표준 fastcgi_params 경로 사용 (/etc/nginx/...)
+                include /etc/nginx/fastcgi_params;
+
+                # [수정] 위에서 정의한 upstream 이름과 일치시킴 (fcgi_backend)
+                fastcgi_pass fcgi_backend;
+
+                # 기존 유지
+                fastcgi_param SCRIPT_FILENAME /home/xt_rest/Xt/src/rest/XtFCGI/XtFCGI;
+                fastcgi_param HTTP_AUTHORIZATION $http_authorization;
+
+                # CORS 설정
+                add_header Access-Control-Allow-Origin "*" always;
+                add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+                add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;
+                add_header Vary "Origin" always;
+
+                if ($request_method = OPTIONS) { return 204; }
+            }
+
+            location = /api/ping { return 200 'pong'; }
+        }
+    }
+
+  # ============================================================
+  # [2] WebSocket 설정 (nginx-wsock.conf)
+  # ============================================================
+  nginx-wsock.conf: |
+    worker_processes auto;
+    pid /tmp/nginx.pid;
+    events { worker_connections 1024; }
+    http {
+        client_body_temp_path /tmp/client_temp;
+        proxy_temp_path       /tmp/proxy_temp_path;
+        fastcgi_temp_path     /tmp/fastcgi_temp;
+        uwsgi_temp_path       /tmp/uwsgi_temp;
+        scgi_temp_path        /tmp/scgi_temp;
+
+        # 스크립트로 생성한 유닉스도메인소켓 경로 불러오기
+        include /etc/nginx/conf.d/wsock_upstream.conf;
+        server {
+            listen 30046;
+            location /wsock {
+                rewrite ^/wsock/?(.*)$ / break;
+                proxy_pass http://wsock_backend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "Upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_read_timeout 3600s;
+                proxy_send_timeout 3600s;
+            }
+        }
+    }
+
+  # --------------------------------------------------------
+  # Access-wsock Nginx가 참고할 서버 설정값
+  # --------------------------------------------------------
+  XtWSOCK.cfg: |
+    [WEBSOCKET]
+    THREAD_COUNT=4

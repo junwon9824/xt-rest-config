@@ -35,7 +35,6 @@ spec:
       - name: test-file-data
         hostPath:
           path: /home/xt_rest/k8s-project/fep/data/test
-          type: File  # 디렉토리가 아닌 단일 파일임을 명시
 
       affinity:
         nodeAffinity:
