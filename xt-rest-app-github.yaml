@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/junwon9824/xt_rest.git
     targetRevision: HEAD
-    path: github-deploy      # GitHub 저장소 내의 배포용 YAML 폴더
+    path: .
   destination:
     server: https://kubernetes.default.svc
     namespace: platform-dev-github # 새로운 GitHub 전용 방
