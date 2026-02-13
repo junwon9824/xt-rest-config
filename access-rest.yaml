@@ -12,7 +12,7 @@ spec:
       labels:
         app: xt-rest
     spec:
-      # ³ëµå Ä£È­¼º ¹× Å×ÀÎÆ® ¼³Á¤
+      # ë…¸ë“œ ì¹œí™”ì„± ë° í…Œì¸íŠ¸ ì„¤ì •
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -28,16 +28,16 @@ spec:
         effect: "NoSchedule"
 
       containers:
-      # (1) Nginx (REST Àü¿ë ¼³Á¤)
+      # (1) Nginx (REST ì „ìš© ì„¤ì •)
       - name: nginx
-        image: 211.240.28.240:30081/platform-development-team/xt-rest-nginx:8d1a2f6f
+        image: 211.240.28.240:30081/platform-development-team/access-rest-nginx:8d1a2f6f
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "50m"     # 0.05 ÄÚ¾î (ÀÌ°É ±âÁØÀ¸·Î % °è»ê)
+            cpu: "50m"     # 0.05 ì½”ì–´ (ì´ê±¸ ê¸°ì¤€ìœ¼ë¡œ % ê³„ì‚°)
             memory: "64Mi"
           limits:
-            cpu: "200m"    # ÃÖ´ë 0.2 ÄÚ¾î
+            cpu: "200m"    # ìµœëŒ€ 0.2 ì½”ì–´
             memory: "128Mi"
         ports:
         - containerPort: 30145
@@ -55,12 +55,12 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "50m"     # 0.05 ÄÚ¾î (ÀÌ°É ±âÁØÀ¸·Î % °è»ê)
+            cpu: "50m"     # 0.05 ì½”ì–´ (ì´ê±¸ ê¸°ì¤€ìœ¼ë¡œ % ê³„ì‚°)
             memory: "64Mi"
           limits:
-            cpu: "200m"    # ÃÖ´ë 0.2 ÄÚ¾î
+            cpu: "200m"    # ìµœëŒ€ 0.2 ì½”ì–´
             memory: "128Mi"
-        # Nginx¿Í localhost Åë½Å
+        # Nginxì™€ localhost í†µì‹ 
         volumeMounts:
         - name: shared-socket-vol
           mountPath: /var/run/xt
@@ -70,5 +70,5 @@ spec:
         configMap:
           name: access-config
       - name: shared-socket-vol
-        emptyDir: {}  # ¸Ş¸ğ¸® ±â¹İ ÀÓ½Ã º¼·ı
+        emptyDir: {}  # ë©”ëª¨ë¦¬ ê¸°ë°˜ ì„ì‹œ ë³¼ë¥¨
 
