@@ -30,7 +30,7 @@ spec:
       containers:
       # (1) Nginx (WebSocket 전용 설정)
       - name: nginx
-        image: 211.240.28.240:30081/platform-development-team/access-wsock-nginx:8d1a2f6f
+        image: 211.240.28.240:30081/platform-development-team/access-wsock-nginx:ba194ba
         imagePullPolicy: Always
         resources:
           requests:
@@ -61,7 +61,7 @@ spec:
 
       # (2) XtWSOCK
       - name: xt-wsock-app
-        image: 211.240.28.240:30081/platform-development-team/access-wsock:a27cda3
+        image: 211.240.28.240:30081/platform-development-team/access-wsock:ba194ba
         imagePullPolicy: Always
         env:
         - name: TZ

@@ -15,7 +15,7 @@ spec:
       serviceAccountName: registry
       containers:
       - name: dest-app
-        image: 211.240.28.240:30081/platform-development-team/dest:a27cda3
+        image: 211.240.28.240:30081/platform-development-team/dest:ba194ba
         imagePullPolicy: Always
         ports:
         - containerPort: 7110
