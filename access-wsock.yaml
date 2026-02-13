@@ -12,7 +12,7 @@ spec:
       labels:
         app: xt-wsock
     spec:
-      # ³ëµå Ä£È­¼º ¹× Å×ÀÎÆ® ¼³Á¤
+      # ë…¸ë“œ ì¹œí™”ì„± ë° í…Œì¸íŠ¸ ì„¤ì •
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -28,27 +28,27 @@ spec:
         effect: "NoSchedule"
 
       containers:
-      # (1) Nginx (WebSocket Àü¿ë ¼³Á¤)
+      # (1) Nginx (WebSocket ì „ìš© ì„¤ì •)
       - name: nginx
-        image: 211.240.28.240:30081/platform-development-team/xt-wsock-nginx:8d1a2f6f
+        image: 211.240.28.240:30081/platform-development-team/access-wsock-nginx:8d1a2f6f
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "100m"     # 0.05 ÄÚ¾î (ÀÌ°É ±âÁØÀ¸·Î % °è»ê)
+            cpu: "100m"     # 0.05 ì½”ì–´ (ì´ê±¸ ê¸°ì¤€ìœ¼ë¡œ % ê³„ì‚°)
             memory: "128Mi"
           limits:
-            cpu: "1000m"    # ÃÖ´ë 0.2 ÄÚ¾î
+            cpu: "1000m"    # ìµœëŒ€ 0.2 ì½”ì–´
             memory: "512Mi"
-        # [Ãß°¡ 1] Nginx¸¦ ¹Ù·Î ÄÑÁö ¾Ê°í, ¼³Á¤ »ı¼º ½ºÅ©¸³Æ®¸¦ ¸ÕÀú ½ÇÇàÇÕ´Ï´Ù.
+        # [ì¶”ê°€ 1] Nginxë¥¼ ë°”ë¡œ ì¼œì§€ ì•Šê³ , ì„¤ì • ìƒì„± ìŠ¤í¬ë¦½íŠ¸ë¥¼ ë¨¼ì € ì‹¤í–‰í•©ë‹ˆë‹¤.
         command: ["/bin/bash", "/home/xt_rest/run_nginx.sh"]
         ports:
         - containerPort: 30046
-        # [Ãß°¡ 2] ½ºÅ©¸³Æ®¿¡°Ô "ÇÁ·Î¼¼½º°¡ 6°³´Ù"¶ó°í ¾Ë·ÁÁİ´Ï´Ù.
+        # [ì¶”ê°€ 2] ìŠ¤í¬ë¦½íŠ¸ì—ê²Œ "í”„ë¡œì„¸ìŠ¤ê°€ 6ê°œë‹¤"ë¼ê³  ì•Œë ¤ì¤ë‹ˆë‹¤.
         env:
         - name: PROCESS_COUNT
           value: "6"
         - name: TZ
-          value: "Asia/Seoul"  # Ãß°¡
+          value: "Asia/Seoul"  # ì¶”ê°€
         volumeMounts:
         - name: app-config-vol
           mountPath: /home/xt_rest/acs/env/XtWSOCK.cfg
@@ -65,15 +65,15 @@ spec:
         imagePullPolicy: Always
         env:
         - name: TZ
-          value: "Asia/Seoul"  # Ãß°¡
+          value: "Asia/Seoul"  # ì¶”ê°€
         resources:
           requests:
-            cpu: "100m"     # 0.05 ÄÚ¾î (ÀÌ°É ±âÁØÀ¸·Î % °è»ê)
+            cpu: "100m"     # 0.05 ì½”ì–´ (ì´ê±¸ ê¸°ì¤€ìœ¼ë¡œ % ê³„ì‚°)
             memory: "256Mi"
           limits:
-            cpu: "1000m"    # ÃÖ´ë 0.2 ÄÚ¾î
+            cpu: "1000m"    # ìµœëŒ€ 0.2 ì½”ì–´
             memory: "1Gi"
-        # Nginx¿Í localhost Åë½Å
+        # Nginxì™€ localhost í†µì‹ 
         volumeMounts:
         - name: shared-socket-vol
           mountPath: /var/run/xt
@@ -83,12 +83,12 @@ spec:
         configMap:
           name: access-config
           items:
-          - key: XtWSOCK.cfg      # ConfigMap ¾ÈÀÇ Å° ÀÌ¸§
-            path: XtWSOCK.cfg     # ÆÄÀÏ·Î ÀúÀåµÉ ÀÌ¸§
+          - key: XtWSOCK.cfg      # ConfigMap ì•ˆì˜ í‚¤ ì´ë¦„
+            path: XtWSOCK.cfg     # íŒŒì¼ë¡œ ì €ì¥ë  ì´ë¦„
 
-      - name: config-volume       # (±âÁ¸ Nginx ¼³Á¤¿ë)
+      - name: config-volume       # (ê¸°ì¡´ Nginx ì„¤ì •ìš©)
         configMap:
           name: access-config
 
-      - name: shared-socket-vol   # (¼ÒÄÏ °øÀ¯¿ë)
+      - name: shared-socket-vol   # (ì†Œì¼“ ê³µìœ ìš©)
         emptyDir: {}
