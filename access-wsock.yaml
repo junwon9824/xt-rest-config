@@ -65,7 +65,7 @@ spec:
           subPath: XtWSOCK.cfg
 
       - name: xt-wsock-app
-        image: 211.240.28.240:30081/platform-development-team/access-wsock:dfec6ee
+        image: 211.240.28.240:30081/platform-development-team/access-wsock:6e35b6e
         imagePullPolicy: Always
         env:
         - name: TZ
