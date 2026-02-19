@@ -4,12 +4,12 @@ metadata:
   name: access-config
 data:
   # ============================================================
-  # [1] REST + Page ì„¤ì • (nginx-rest.conf)
+  # [1] REST + Page ¼³Á¤ (nginx-rest.conf)
   # ============================================================
   nginx-rest.conf: |
     worker_processes auto;
 
-    # [ìˆ˜ì •] í‘œì¤€ ê²½ë¡œ ì‚¬ìš©
+    # [¼öÁ¤] Ç¥ÁØ °æ·Î »ç¿ë
     pid /tmp/nginx.pid;
 
     events { worker_connections 1024; }
@@ -19,14 +19,14 @@ data:
         default_type application/octet-stream;
         sendfile on;
 
-        # ìž„ì‹œ ê²½ë¡œ ê¶Œí•œ ë¬¸ì œ ë°©ì§€
+        # ÀÓ½Ã °æ·Î ±ÇÇÑ ¹®Á¦ ¹æÁö
         client_body_temp_path /tmp/client_temp;
         proxy_temp_path       /tmp/proxy_temp_path;
         fastcgi_temp_path     /tmp/fastcgi_temp;
         uwsgi_temp_path       /tmp/uwsgi_temp;
         scgi_temp_path        /tmp/scgi_temp;
 
-        # Upstream ì •ì˜
+        # Upstream Á¤ÀÇ
         upstream fcgi_backend {
             least_conn;
             server unix:/var/run/xt/rest_1.sock;
@@ -37,7 +37,7 @@ data:
             server unix:/var/run/xt/rest_6.sock;
         }
 
-        # [A] íŽ˜ì´ì§€ ì „ìš© (30145)
+        # [A] ÆäÀÌÁö Àü¿ë (30145)
         server {
             listen 30145;
             server_name page-server;
@@ -66,32 +66,32 @@ data:
 
         }
 
-        # [B] REST API ì „ìš© (30045)
+        # [B] REST API Àü¿ë (30045)
         server {
             listen 30045;
             server_name rest-api-server;
 
             location /XtFCGI {
-                # [ìˆ˜ì •] í‘œì¤€ ë¡œê·¸ ê²½ë¡œ ì‚¬ìš© (/var/log/nginx/...)
+                # [¼öÁ¤] Ç¥ÁØ ·Î±× °æ·Î »ç¿ë (/var/log/nginx/...)
                 access_log /var/log/nginx/access_xtfcgi.log;
 
-                # í—¤ë” ì •ë¦¬
+                # Çì´õ Á¤¸®
                 fastcgi_hide_header Access-Control-Allow-Origin;
                 fastcgi_hide_header Access-Control-Allow-Methods;
                 fastcgi_hide_header Access-Control-Allow-Headers;
                 fastcgi_hide_header Access-Control-Allow-Credentials;
 
-                # [ìˆ˜ì •] í‘œì¤€ fastcgi_params ê²½ë¡œ ì‚¬ìš© (/etc/nginx/...)
+                # [¼öÁ¤] Ç¥ÁØ fastcgi_params °æ·Î »ç¿ë (/etc/nginx/...)
                 include /etc/nginx/fastcgi_params;
 
-                # [ìˆ˜ì •] ìœ„ì—ì„œ ì •ì˜í•œ upstream ì´ë¦„ê³¼ ì¼ì¹˜ì‹œí‚´ (fcgi_backend)
+                # [¼öÁ¤] À§¿¡¼­ Á¤ÀÇÇÑ upstream ÀÌ¸§°ú ÀÏÄ¡½ÃÅ´ (fcgi_backend)
                 fastcgi_pass fcgi_backend;
 
-                # ê¸°ì¡´ ìœ ì§€
+                # ±âÁ¸ À¯Áö
                 fastcgi_param SCRIPT_FILENAME /home/xt_rest/Xt/src/rest/XtFCGI/XtFCGI;
                 fastcgi_param HTTP_AUTHORIZATION $http_authorization;
 
-                # CORS ì„¤ì •
+                # CORS ¼³Á¤
                 add_header Access-Control-Allow-Origin "*" always;
                 add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
                 add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;
@@ -105,7 +105,7 @@ data:
     }
 
   # ============================================================
-  # [2] WebSocket ì„¤ì • (nginx-wsock.conf)
+  # [2] WebSocket ¼³Á¤ (nginx-wsock.conf)
   # ============================================================
   nginx-wsock.conf: |
     worker_processes auto;
@@ -118,7 +118,7 @@ data:
         uwsgi_temp_path       /tmp/uwsgi_temp;
         scgi_temp_path        /tmp/scgi_temp;
 
-        # ìŠ¤í¬ë¦½íŠ¸ë¡œ ìƒì„±í•œ ìœ ë‹‰ìŠ¤ë„ë©”ì¸ì†Œì¼“ ê²½ë¡œ ë¶ˆëŸ¬ì˜¤ê¸°
+        # ½ºÅ©¸³Æ®·Î »ý¼ºÇÑ À¯´Ð½ºµµ¸ÞÀÎ¼ÒÄÏ °æ·Î ºÒ·¯¿À±â
         include /etc/nginx/conf.d/wsock_upstream.conf;
         server {
             listen 30046;
@@ -136,9 +136,84 @@ data:
         }
     }
 
-  # --------------------------------------------------------
-  # Access-wsock Nginxê°€ ì°¸ê³ í•  ì„œë²„ ì„¤ì •ê°’
-  # --------------------------------------------------------
-  XtWSOCK.cfg: |
-    [WEBSOCKET]
-    THREAD_COUNT=4
+  haproxy.cfg.tpl: |
+    global
+        log stdout format raw local0
+        maxconn 200000
+
+    defaults
+        log global
+        option httplog
+        timeout connect 3s
+        timeout client  3600s
+        timeout server  3600s
+        timeout http-request 10s
+        timeout http-keep-alive 30s
+        timeout tunnel  2h
+
+    frontend fe_wsock
+        bind :30046
+        mode http
+        default_backend be_wsock
+
+    backend be_wsock
+        mode http
+        balance leastconn
+        __SERVERS__
+#__SERVERS__´Â ½ºÅ©¸³Æ®¿¡¼­ Ä¡È¯µÊ
+
+  run_haproxy.sh: |
+    #!/bin/sh
+    set -eu
+
+    TPL="/etc/haproxy/haproxy.cfg.tpl"
+    OUT="/tmp/haproxy.cfg"
+
+    PROCESS_COUNT="${PROCESS_COUNT:-6}"
+    THREAD_COUNT="${THREAD_COUNT:-4}"
+
+    SOCK_DIR="${SOCK_DIR:-/var/run/xt}"
+    SOCK_PREFIX="${SOCK_PREFIX:-wsock}"
+    SERVER_MAXCONN="${SERVER_MAXCONN:-5000}"
+
+    echo "[haproxy] PROCESS_COUNT=$PROCESS_COUNT"
+    echo "[haproxy] THREAD_COUNT=$THREAD_COUNT"
+    echo "[haproxy] SOCK_DIR=$SOCK_DIR SOCK_PREFIX=$SOCK_PREFIX"
+
+    # ±â´ë ¼ÒÄÏ °³¼ö¸¸Å­ ±â´Ù¸®±â (ÃÖ´ë 10ÃÊ: 0.1s * 100)
+    expected=$((PROCESS_COUNT * THREAD_COUNT))
+    i=0
+    while [ "$i" -lt 100 ]; do
+        # ½ÇÁ¦ Á¸ÀçÇÏ´Â ¼ÒÄÏ °³¼ö
+        cnt=$(ls -1 "${SOCK_DIR}/${SOCK_PREFIX}_"*.sock 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$cnt" -ge "$expected" ]; then
+        break
+        fi
+        i=$((i+1))
+        sleep 0.1
+    done
+    echo "[haproxy] found_sockets=${cnt:-0} expected=$expected"
+
+    # Á¸ÀçÇÏ´Â ¼ÒÄÏ¸¸ µî·Ï (¾È ¶á ¼ÒÄÏÀ¸·Î connect ½ÃµµÇØ¼­ Èçµé¸®´Â ¹®Á¦ ¹æÁö)
+    servers=""
+    p=1
+    while [ "$p" -le "$PROCESS_COUNT" ]; do
+        t=0
+        while [ "$t" -lt "$THREAD_COUNT" ]; do
+        sock="${SOCK_DIR}/${SOCK_PREFIX}_${p}_${t}.sock"
+        if [ -S "$sock" ]; then
+            servers="${servers}    server ws_${p}_${t} unix@${sock} maxconn ${SERVER_MAXCONN}\n"
+        else
+            echo "[haproxy] WARN missing socket: $sock" >&2
+        fi
+        t=$((t+1))
+        done
+        p=$((p+1))
+    done
+
+    awk -v repl="$(printf "%b" "$servers")" '{gsub(/__SERVERS__/, repl)}1' "$TPL" > "$OUT"
+
+    echo "=== rendered haproxy.cfg ==="
+    cat "$OUT"
+
+    exec haproxy -f "$OUT" -db

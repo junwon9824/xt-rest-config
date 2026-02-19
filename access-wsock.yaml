@@ -12,7 +12,6 @@ spec:
       labels:
         app: xt-wsock
     spec:
-      # 노드 친화성 및 테인트 설정
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -28,67 +27,80 @@ spec:
         effect: "NoSchedule"
 
       containers:
-      # (1) Nginx (WebSocket 전용 설정)
-      - name: nginx
-        image: 211.240.28.240:30081/platform-development-team/access-wsock-nginx:4cc0590
+      - name: haproxy
+        image: haproxy:2.9
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "100m"     # 0.05 코어 (이걸 기준으로 % 계산)
+            cpu: "100m"
             memory: "128Mi"
           limits:
-            cpu: "1000m"    # 최대 0.2 코어
+            cpu: "1000m"
             memory: "512Mi"
-        # [추가 1] Nginx를 바로 켜지 않고, 설정 생성 스크립트를 먼저 실행합니다.
-        command: ["/bin/bash", "/home/xt_rest/run_nginx.sh"]
+
+        command: ["/bin/sh", "/etc/haproxy/run_haproxy.sh"]
+
         ports:
         - containerPort: 30046
-        # [추가 2] 스크립트에게 "프로세스가 6개다"라고 알려줍니다.
+
         env:
         - name: PROCESS_COUNT
           value: "6"
+        - name: THREAD_COUNT
+          value: "4"
         - name: TZ
-          value: "Asia/Seoul"  # 추가
+          value: "Asia/Seoul"
+
         volumeMounts:
-        - name: app-config-vol
-          mountPath: /home/xt_rest/acs/env/XtWSOCK.cfg
-          subPath: XtWSOCK.cfg
+        # access-config(ConfigMap) ��ü�� /etc/haproxy�� ����Ʈ
         - name: config-volume
-          mountPath: /etc/nginx/nginx.conf
-          subPath: nginx-wsock.conf
+          mountPath: /etc/haproxy
+
+        # UDS ����
         - name: shared-socket-vol
           mountPath: /var/run/xt
+        
+        - name: wsock-config-vol
+          mountPath: /etc/xt/XtWSOCK.cfg
+          subPath: XtWSOCK.cfg
 
-      # (2) XtWSOCK
       - name: xt-wsock-app
-        image: 211.240.28.240:30081/platform-development-team/access-wsock:4cc0590
+        image: 211.240.28.240:30081/platform-development-team/access-wsock:dfec6ee
         imagePullPolicy: Always
         env:
         - name: TZ
-          value: "Asia/Seoul"  # 추가
+          value: "Asia/Seoul"
         resources:
           requests:
-            cpu: "100m"     # 0.05 코어 (이걸 기준으로 % 계산)
+            cpu: "100m"
             memory: "256Mi"
           limits:
-            cpu: "1000m"    # 최대 0.2 코어
+            cpu: "1000m"
             memory: "1Gi"
-        # Nginx와 localhost 통신
         volumeMounts:
+        - name: wsock-config-vol
+          mountPath: /etc/xt/XtWSOCK.cfg
+          subPath: XtWSOCK.cfg
         - name: shared-socket-vol
           mountPath: /var/run/xt
 
       volumes:
-      - name: app-config-vol
+      - name: wsock-config-vol
         configMap:
-          name: access-config
+          name: XtWSOCK-config
           items:
-          - key: XtWSOCK.cfg      # ConfigMap 안의 키 이름
-            path: XtWSOCK.cfg     # 파일로 저장될 이름
+          - key: XtWSOCK.cfg
+            path: XtWSOCK.cfg
 
-      - name: config-volume       # (기존 Nginx 설정용)
+      - name: config-volume
         configMap:
           name: access-config
+          defaultMode: 0755
+          items:
+            - key: haproxy.cfg.tpl
+              path: haproxy.cfg.tpl
+            - key: run_haproxy.sh
+              path: run_haproxy.sh
 
-      - name: shared-socket-vol   # (소켓 공유용)
+      - name: shared-socket-vol
         emptyDir: {}

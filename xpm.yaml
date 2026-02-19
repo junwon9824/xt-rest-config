@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xpm-all-in-one
+  labels:
+    app: xpm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xpm
+  template:
+    metadata:
+      labels:
+        app: xpm
+    spec:
+      containers:
+      - name: xpm-server
+        image: xpm-total-image:latest
+        ports:
+        - containerPort: 8300
+
+        resources:
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+
+        env:
+        - name: XPMHOME
+          value: "/home/xt_rest/xpm"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xpm-service
+spec:
+  type: NodePort
+  selector:
+    app: xpm
+  ports:
+    - protocol: TCP
+      port: 8300
+      targetPort: 8300
+      nodePort: 30830
