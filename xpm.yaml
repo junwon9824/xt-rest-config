@@ -16,18 +16,23 @@ spec:
     spec:
       containers:
       - name: xpm-server
-        image: xpm-total-image:latest
+        # Harbor 주소를 포함한 전체 경로로 수정 필요
+        image: 211.240.28.240:30081/platform-development-team/xpm:49c7c157
         ports:
         - containerPort: 8300
-
         resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
           limits:
             memory: "2Gi"
             cpu: "1000m"
-
         env:
         - name: XPMHOME
           value: "/home/xt_rest/xpm"
+        # 필요한 경우 TZ 설정 추가 (인코딩/시간 정합성)
+        - name: TZ
+          value: "Asia/Seoul"
 ---
 apiVersion: v1
 kind: Service
@@ -41,4 +46,4 @@ spec:
     - protocol: TCP
       port: 8300
       targetPort: 8300
-      nodePort: 30830
+      nodePort: 30830  # 외부 접근 포트
