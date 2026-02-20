@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: dest-app
-        image: 211.240.28.240:30081/platform-development-team/dest:826a1f0
+        image: 211.240.28.240:30081/platform-development-team/dest:20ce934
         imagePullPolicy: Always
         ports:
         - containerPort: 7110
