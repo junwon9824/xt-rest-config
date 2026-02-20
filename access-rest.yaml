@@ -30,7 +30,7 @@ spec:
       containers:
       # (1) Nginx (REST 전용 설정)
       - name: nginx
-        image: 211.240.28.240:30081/platform-development-team/access-rest-nginx:5727920
+        image: 211.240.28.240:30081/platform-development-team/access-rest-nginx:1e0e991
         imagePullPolicy: Always
         resources:
           requests:
@@ -51,7 +51,7 @@ spec:
 
       # (2) XtREST
       - name: xt-rest-app
-        image: 211.240.28.240:30081/platform-development-team/access-rest:5727920
+        image: 211.240.28.240:30081/platform-development-team/access-rest:1e0e991
         imagePullPolicy: Always
         resources:
           requests:
