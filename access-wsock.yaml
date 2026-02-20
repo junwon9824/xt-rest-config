@@ -59,7 +59,7 @@ spec:
         # UDS °øÀ¯
         - name: shared-socket-vol
           mountPath: /var/run/xt
-        
+
         - name: wsock-config-vol
           mountPath: /etc/xt/XtWSOCK.cfg
           subPath: XtWSOCK.cfg
@@ -87,7 +87,7 @@ spec:
       volumes:
       - name: wsock-config-vol
         configMap:
-          name: XtWSOCK-config
+          name: xtwsock-config
           items:
           - key: XtWSOCK.cfg
             path: XtWSOCK.cfg
