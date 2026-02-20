@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fep-app
-        image: 211.240.28.240:30081/platform-development-team/fep:74e7a06
+        image: 211.240.28.240:30081/platform-development-team/fep:08d0c31
         imagePullPolicy: Always
         ports:
         - containerPort: 8405
